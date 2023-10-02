@@ -1,10 +1,16 @@
+CC = gcc
+CFLAGS = -Wall
+
+all: queue caesar ciphered_queue
+
 queue: queue_main.c queue.c
-    gcc -o queue queue_main.c queue.c -Wall
+    $(CC) $(CFLAGS) -o queue queue_main.c queue.c
 
 caesar: caesar.c
-    gcc -o caesar caesar.c -Wall
+    $(CC) $(CFLAGS) -o caesar caesar.c
 
-all: queue caesar
+ciphered_queue: ciphered_queue_main.c queue.c
+    $(CC) $(CFLAGS) -o ciphered_queue ciphered_queue_main.c queue.c
 
 clean:
-    rm -f queue caesar
+    rm -f queue caesar ciphered_queue
