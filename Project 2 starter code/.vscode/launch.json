@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/haoyu/Downloads/Project 2 starter code",
-      "program": "/Users/haoyu/Downloads/Project 2 starter code/build/Debug/outDebug"
+      "cwd": "/Users/haoyu/Desktop/CS5600/Project 2 starter code",
+      "program": "/Users/haoyu/Desktop/CS5600/Project 2 starter code/build/Debug/outDebug"
     }
   ]
 }

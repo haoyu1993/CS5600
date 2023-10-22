@@ -1,9 +1,3 @@
-/*
- * file:        part-2.c
- * description: Part 2, CS5600 Project 2, Fall 2023
- */
-
-/* NO OTHER INCLUDE FILES */
 #include "elf64.h"
 #include "sysdefs.h"
 
@@ -11,11 +5,10 @@ extern void *vector[];
 
 /* ---------- */
 
-/* write these functions 
-*/
-int read(int fd, void *ptr, int len);           //done in part1
-int write(int fd, void *ptr, int len);          //done in part1
-void exit(int err);                             //done in part1
+/* write these functions */
+int read(int fd, void *ptr, int len); // Done in part1
+int write(int fd, void *ptr, int len); // Done in part1
+void exit(int err);                   // Done in part1
 int open(char *path, int flags);
 int close(int fd);
 int lseek(int fd, int offset, int flag);
@@ -24,78 +17,70 @@ int munmap(void *addr, int len);
 
 /* ---------- */
 
-/* Write the three 'system call' functions - do_readline, do_print, do_getarg 
- * Adjust the functions readline and print-and-clean functions written in part 1, to obtain
- * the 'system call' functions do_readline and do_print
- * hints: 
- *  - read() or write() one byte at a time. It's OK to be slow.
- *  - stdin is file desc. 0, stdout is file descriptor 1
- *  - use global variables for getarg
- */
+/* Write the three 'system call' functions - do_readline, do_print, do_getarg */
+void do_readline(char *buf, int len) {
+    char c;
+    int i;
+    for (i = 0; i < len - 1; i++) {
+        if (read(0, &c, 1) <= 0) {
+            break; // Handle read error or end of file
+        }
+        buf[i] = c;
+        if (c == '\n') {
+            buf[i + 1] = '\0';
+            break;
+        }
+    }
+    buf[len - 1] = '\0';
+}
 
-/* your code here */
-void do_readline(char *buf, int len);
-void do_print(char *buf);
-char *do_getarg(int i);         
+void do_print(char *buf) {
+    int i = 0;
+    while (buf[i] != '\0') {
+        write(1, &buf[i], 1);
+        buf[i] = '\0'; // Clean the printed character
+        i++;
+    }
+}
 
-/* ---------- */
-
-
-
-/* simple function to split a line:
- *   char buffer[200];
- *   <read line into 'buffer'>
- *   char *argv[10];
- *   int argc = split(argv, 10, buffer);
- *   ... pointers to words are in argv[0], ... argv[argc-1]
- */
-int split(char **argv, int max_argc, char *line)
-{
-	int i = 0;
-	char *p = line;
-
-	while (i < max_argc) {
-		while (*p != 0 && (*p == ' ' || *p == '\t' || *p == '\n'))
-			*p++ = 0;
-		if (*p == 0)
-			return i;
-		argv[i++] = p;
-		while (*p != 0 && *p != ' ' && *p != '\t' && *p != '\n')
-			p++;
-	}
-	return i;
+char *do_getarg(int i) {
+    // Your implementation here
 }
 
 /* ---------- */
 
-/* This is where you write the details of the function exec(char* filename) called by main()
-* Follow instructions listed in project description.
-* the guts of part 2
-*   read the ELF header
-*   for each segment, if b_type == PT_LOAD:
-*     create mmap region
-*     read from file into region
-*   function call to hdr.e_entry
-*   munmap each mmap'ed region so we don't crash the 2nd time
-*
-*   don't forget to define offset, and add it to virtual addresses read from ELF file
-*
-*               your code here
-*/
+/* This is where you write the details of the function exec(char* filename) called by main() */
+void exec(char *filename) {
+    // Your implementation here
+    int fd = open(filename, 0);
+    if (fd < 0) {
+        exit(1); // Open failed
+    }
 
+    Elf64_Ehdr hdr;
+    if (read(fd, &hdr, sizeof(hdr)) != sizeof(hdr)) {
+        close(fd);
+        exit(1); // Read ELF header failed
+    }
 
+    if (hdr.e_ident[0] != 0x7F || hdr.e_ident[1] != 'E' || hdr.e_ident[2] != 'L' || hdr.e_ident[3] != 'F') {
+        close(fd);
+        exit(1); // Not a valid ELF file
+    }
 
-/* ---------- */
-void main(void)
-{   // The vector array is defined as a global array. It plays the role of a system call vector table 
-	// (similar to the interrupt vector table seen in class). Each entry in this array/table holds the address
-	// of the corresponding system function. Check out call-vector.S and Makefile to see how the vector table is built.
-	
-	vector[0] = do_readline;
-	vector[1] = do_print;
-	vector[2] = do_getarg;
+    // Your code for loading and executing the ELF file here
 
-	/* YOUR CODE HERE AS DESCRIBED IN THE FILE DESCRIPTION*/
-	/* When the user enters an executable_file, the main function should call exec(executable_file) */
+    close(fd); // Close the file descriptor when done
 }
 
+/* ---------- */
+void main(void) {
+    vector[0] = do_readline;
+    vector[1] = do_print;
+    vector[2] = do_getarg;
+
+    char filename[200];
+    do_readline(filename, 200);
+
+    exec(filename); // Execute the specified ELF file
+}
